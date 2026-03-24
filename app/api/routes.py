@@ -3,6 +3,7 @@ from app.models.schemas import QueryRequest
 from app.services.llm_service import generate_sql_from_question
 from app.services.guard_service import validate_sql
 from app.services.mysql_service import run_query
+from app.services.retrieval_service import retrieve_schema
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ async def query_debug(req: QueryRequest):
 @router.post("/query/run")
 async def query_run(req: QueryRequest):
     sql = await generate_sql_from_question(req.question)
-    
+
     try:
         checked_sql = validate_sql(sql)
     except ValueError as e:
@@ -35,4 +36,14 @@ async def query_run(req: QueryRequest):
         "sql": checked_sql,
         "columns": columns,
         "rows": rows,
+    }
+
+
+@router.post("/debug/schema")
+async def debug_schema(req: QueryRequest):
+    schemas = await retrieve_schema(req.question)
+
+    return {
+        "question": req.question,
+        "retrieved_schema": schemas,
     }
