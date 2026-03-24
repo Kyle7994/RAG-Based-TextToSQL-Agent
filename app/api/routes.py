@@ -22,31 +22,29 @@ def health():
 
 @router.post("/query/debug")
 async def query_debug(req: QueryRequest):
-    sql = await generate_sql_from_question(req.question)
+    # 接收两个返回值
+    query_plan, sql = await generate_sql_from_question(req.question)
     checked_sql = validate_sql(sql)
     return {
         "question": req.question,
+        "query_plan": query_plan,  # 把大模型的思考过程也返回给前端
         "generated_sql": sql,
         "validated_sql": checked_sql,
     }
 
 @router.post("/query/run")
 async def query_run(req: QueryRequest):
-    sql = await generate_sql_from_question(req.question)
-
-    try:
-        checked_sql = validate_sql(sql)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
+    # 接收两个返回值
+    query_plan, sql = await generate_sql_from_question(req.question)
+    checked_sql = validate_sql(sql)
     columns, rows = run_query(checked_sql)
     return {
         "question": req.question,
+        "query_plan": query_plan,  # 方便前端展示：AI 是怎么想的
         "sql": checked_sql,
         "columns": columns,
         "rows": rows,
     }
-
 
 @router.post("/system/sync-schema")
 async def api_sync_schema():
