@@ -1,0 +1,14 @@
+# dictionary.yaml
+
+tables:
+  orders:
+    status: 'Categorical field; observed values: cancelled, paid, pending, refunded'
+  products:
+    name: A product name that identifies a specific item in the products table.
+    category: 'Categorical field; observed values: Accessories, Electronics, Furniture,
+      Home Office, Lifestyle'
+  users:
+    email: Email addresses of registered users in the system.
+    country: 'Categorical field; observed values: AU, BR, CA, DE, FR'
+    channel: 'Categorical field; observed values: ads, organic, referral'
+    is_vip: Boolean flag for is vip

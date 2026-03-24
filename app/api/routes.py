@@ -1,4 +1,18 @@
-# routes.py
+# -*- coding: utf-8 -*-
+
+"""
+app/api/routes.py
+
+This module defines the API endpoints for the Text-to-SQL agent.
+
+It includes routes for:
+- Health checks to confirm the service is running.
+- The primary text-to-SQL query execution flow.
+- A debug endpoint to inspect the intermediate steps of SQL generation.
+- System-level operations like schema synchronization and adding few-shot examples.
+
+All business logic is delegated to services to keep the routing layer clean and focused.
+"""
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -22,6 +36,10 @@ from app.services.schema_service import sync_mysql_schema_to_pg
 
 
 class ExampleRequest(BaseModel):
+    """
+    Defines the request model for adding a new few-shot example.
+    It requires both the natural language question and its corresponding correct SQL query.
+    """
     question: str
     sql: str
 
@@ -31,11 +49,30 @@ router = APIRouter()
 
 @router.get("/health")
 def health():
+    """
+    Health check endpoint.
+
+    Returns:
+        dict: A dictionary with the status "ok" if the service is running.
+    """
     return {"status": "ok"}
 
 
 @router.post("/query/debug")
 async def query_debug(req: QueryRequest):
+    """
+    Provides a step-by-step debug view of the Text-to-SQL generation process.
+
+    This endpoint simulates the query generation without executing the final SQL.
+    It returns intermediate data like the query plan, generated SQL, and cache status.
+    This is useful for troubleshooting and understanding the AI's reasoning.
+
+    Args:
+        req (QueryRequest): The request containing the natural language question.
+
+    Returns:
+        dict: A detailed breakdown of the generation process.
+    """
     schema_version = get_current_schema_version()
     if not schema_version:
         return {
@@ -50,6 +87,7 @@ async def query_debug(req: QueryRequest):
             "is_cached": False,
         }
 
+    # Check cache first for a quick response
     cached = get_cached_response(req.question, schema_version=schema_version)
     if cached:
         checked_sql = None
@@ -67,11 +105,12 @@ async def query_debug(req: QueryRequest):
             "uncertainty_note": cached.get("uncertainty_note"),
             "answerable": cached.get("answerable", True),
             "schema_version": schema_version,
-            "cache_status": "not_cached",
+            "cache_status": cached.get("status", "unknown"),
             "error": cached.get("error"),
             "is_cached": True,
-        }
+    }
 
+    # If not cached, proceed with the generation process
     schema_context, examples_context = await build_generation_context(req.question)
 
     query_plan, sql, uncertainty, answerable = await generate_sql_from_question(
@@ -83,6 +122,7 @@ async def query_debug(req: QueryRequest):
     checked_sql = None
     error_msg = None
 
+    # Handle cases where the question is deemed unanswerable
     if not answerable or not sql:
         rejection_reason = uncertainty or "Question cannot be answered from current schema."
 
@@ -112,11 +152,13 @@ async def query_debug(req: QueryRequest):
             "is_cached": False,
         }
 
+    # Validate the generated SQL syntax
     try:
         checked_sql = validate_sql(sql)
     except Exception as e:
         error_msg = f"SQL validation failed: {str(e)}"
 
+    # Cache the successful generation result for future use
     if checked_sql and not error_msg:
         set_cached_success(
             question=req.question,
@@ -147,6 +189,24 @@ async def query_debug(req: QueryRequest):
 
 @router.post("/query/run")
 async def query_run(req: QueryRequest):
+    """
+    The main endpoint to convert a natural language question into a SQL query and execute it.
+
+    This function orchestrates the entire Text-to-SQL pipeline:
+    1. Checks for a cached response.
+    2. Builds a generation context (schema + examples).
+    3. Generates the SQL using an LLM.
+    4. Applies semantic and safety guards.
+    5. Executes the query against the database.
+    6. Attempts to self-correct/repair the SQL if execution fails.
+    7. Caches the final result (success or failure).
+
+    Args:
+        req (QueryRequest): The request containing the natural language question.
+
+    Returns:
+        dict: The final result, including the executed SQL, column headers, and data rows.
+    """
     uncertainty = None
     error_msg = None
     columns, rows = [], []
@@ -154,7 +214,7 @@ async def query_run(req: QueryRequest):
     semantic_guard_passed = False
     is_cached = False
 
-    # 1) 先拿全局 schema_version，没初始化就 fail-closed
+    # 1. Ensure schema is initialized before proceeding.
     schema_version = get_current_schema_version()
     if not schema_version:
         return {
@@ -168,7 +228,7 @@ async def query_run(req: QueryRequest):
             "is_cached": False,
         }
 
-    # 2) 先查缓存，命中则直接返回
+    # 2. Check for a cached response to avoid redundant processing.
     cached = get_cached_response(req.question, schema_version=schema_version)
     if cached:
         return {
@@ -179,10 +239,11 @@ async def query_run(req: QueryRequest):
             "columns": cached.get("columns", []),
             "rows": cached.get("rows", []),
             "error": cached.get("error"),
+            "cache_status": cached.get("status", "unknown"),
             "is_cached": True,
         }
 
-    # 3) 缓存未命中时，构造 generation context
+    # 3. Build the context required for the LLM to generate SQL.
     schema_context, examples_context = await build_generation_context(req.question)
     if not schema_context:
         return {
@@ -196,7 +257,7 @@ async def query_run(req: QueryRequest):
             "is_cached": False,
         }
 
-    # 4) 生成 SQL / 或拒答
+    # 4. Generate the SQL query or receive a rejection if the question is unanswerable.
     query_plan, sql, uncertainty, answerable = await generate_sql_from_question(
         req.question,
         schema_context=schema_context,
@@ -230,7 +291,7 @@ async def query_run(req: QueryRequest):
             "is_cached": False,
         }
 
-    # 5) semantic guard
+    # 5. Apply a semantic guard to check if the generated SQL is logically sound.
     semantic_guard_passed, semantic_reason = semantic_guard(
         question=req.question,
         sql=sql,
@@ -238,7 +299,6 @@ async def query_run(req: QueryRequest):
     )
 
     if not semantic_guard_passed:
-        semantic_guard_passed = True
         rejection_reason = f"Semantic validation failed: {semantic_reason}"
 
         set_cached_rejection(
@@ -260,10 +320,10 @@ async def query_run(req: QueryRequest):
             "is_cached": False,
         }
 
-    # 关键：首次 guard 通过就标记 True，不要只在 repair 成功后才设
+    # Mark that the initial semantic guard passed.
     semantic_guard_passed = True
 
-    # 6) 执行；失败时尝试一次 repair
+    # 6. Execute the SQL. If it fails, attempt to repair it once.
     try:
         checked_sql = validate_sql(sql)
         columns, rows = run_query(checked_sql)
@@ -272,6 +332,7 @@ async def query_run(req: QueryRequest):
         first_error = str(e)
 
         try:
+            # Attempt to repair the failed SQL using the LLM.
             query_plan, repaired_sql, repaired_uncertainty = await repair_sql(
                 req.question,
                 first_error,
@@ -282,6 +343,7 @@ async def query_run(req: QueryRequest):
             if not repaired_sql:
                 raise ValueError(repaired_uncertainty or "AI could not generate a valid fix for this question.")
 
+            # Re-run semantic guard on the repaired SQL.
             repaired_guard_passed, repaired_reason = semantic_guard(
                 question=req.question,
                 sql=repaired_sql,
@@ -290,17 +352,19 @@ async def query_run(req: QueryRequest):
             if not repaired_guard_passed:
                 raise ValueError(f"Repaired SQL failed semantic validation: {repaired_reason}")
 
+            # Execute the repaired SQL.
             checked_sql = validate_sql(repaired_sql)
             columns, rows = run_query(checked_sql)
             uncertainty = repaired_uncertainty
             semantic_guard_passed = True
 
         except Exception as e2:
+            # If repair fails, finalize the error.
             checked_sql = None
             error_msg = f"Self-correction failed: {str(e2)}"
             columns, rows = [], []
 
-    # 7) 成功才缓存
+    # 7. Cache the final successful result.
     if should_cache_success(
         error_msg=error_msg,
         is_cached=is_cached,
@@ -332,12 +396,34 @@ async def query_run(req: QueryRequest):
 
 @router.post("/system/sync-schema")
 async def api_sync_schema():
+    """
+    Triggers the schema synchronization process.
+
+    This endpoint reads the schema from the source MySQL database, profiles it,
+    and saves the structured information into the PostgreSQL vector database.
+    This is a crucial step for the RAG system to have up-to-date context.
+
+    Returns:
+        dict: The result of the synchronization process.
+    """
     result = await sync_mysql_schema_to_pg()
     return result
 
 
 @router.post("/system/add-example")
 async def add_example(req: ExampleRequest):
+    """
+    Adds a new question-SQL pair as a few-shot example.
+
+    These examples are used to improve the accuracy of the LLM by providing
+    high-quality, relevant samples during the prompt construction.
+
+    Args:
+        req (ExampleRequest): The request containing the question and its correct SQL.
+
+    Returns:
+        dict: A success message and the new version of the examples set.
+    """
     checked_sql = validate_sql(req.sql)
     embedding = await get_embedding(req.question)
     save_sql_example(req.question, checked_sql, embedding)

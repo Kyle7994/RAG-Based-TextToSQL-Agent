@@ -1,0 +1,919 @@
+==================================================
+Q: What is the total amount of paid orders?
+--------------------------------------------------
+{
+  "question": "What is the total amount of paid orders?",
+  "query_plan": "Start with a SELECT statement, filter for paid orders and calculate the total amount.",
+  "sql": "SELECT SUM(o.total_amount) FROM orders AS o WHERE NOT o.paid_at IS NULL LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(o.total_amount)"
+  ],
+  "rows": [
+    [
+      "1869.14"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: How many paid orders are there?
+--------------------------------------------------
+{
+  "question": "How many paid orders are there?",
+  "query_plan": "First, filter orders to only include those with 'paid' status. Then, count the number of these paid orders.",
+  "sql": "SELECT COUNT(*) AS paid_orders FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "paid_orders"
+  ],
+  "rows": [
+    [
+      14
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total amount of refunded orders?
+--------------------------------------------------
+{
+  "question": "What is the total amount of refunded orders?",
+  "query_plan": "Join the orders table with itself to filter only refunds, then use a WHERE clause to only include orders with status 'refunded'. Finally, sum up the total_amount column for these filtered orders.",
+  "sql": null,
+  "uncertainty_note": "SQL validation/qualification failed: Column 'total_amount' could not be resolved. Line: 1, Col: 23",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL validation/qualification failed: Column 'total_amount' could not be resolved. Line: 1, Col: 23",
+  "is_cached": false
+}
+
+==================================================
+Q: How many pending orders are there?
+--------------------------------------------------
+{
+  "question": "How many pending orders are there?",
+  "query_plan": "Filtering 'orders' by 'status' to find pending orders.",
+  "sql": "SELECT COUNT(*) AS num_pending_orders FROM orders WHERE status = 'pending' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "num_pending_orders"
+  ],
+  "rows": [
+    [
+      2
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: How many cancelled orders are there?
+--------------------------------------------------
+{
+  "question": "How many cancelled orders are there?",
+  "query_plan": "Check the 'status' column in the 'orders' table for cancelled orders.",
+  "sql": "SELECT COUNT(*) FROM orders WHERE status = 'cancelled' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "COUNT(*)"
+  ],
+  "rows": [
+    [
+      2
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total amount of all orders?
+--------------------------------------------------
+{
+  "question": "What is the total amount of all orders?",
+  "query_plan": "Start with a SELECT statement to retrieve the total amount of all orders. This can be achieved by summing up the total_amount column from the orders table.",
+  "sql": "SELECT SUM(total_amount) FROM orders LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      "2067.54"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: How many users are there in total?
+--------------------------------------------------
+{
+  "question": "How many users are there in total?",
+  "query_plan": "Count the number of rows in the 'users' table.",
+  "sql": "SELECT COUNT(*) AS total_users FROM users LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "total_users"
+  ],
+  "rows": [
+    [
+      20
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: How many VIP users are there?
+--------------------------------------------------
+{
+  "question": "How many VIP users are there?",
+  "query_plan": "Count the number of rows in the users table where is_vip = 1",
+  "sql": "SELECT COUNT(*) FROM users WHERE is_vip = 1 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "COUNT(*)"
+  ],
+  "rows": [
+    [
+      7
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the average amount of paid orders?
+--------------------------------------------------
+{
+  "question": "What is the average amount of paid orders?",
+  "query_plan": "Join the orders and order_items tables to get the total_amount of each paid order, then calculate the average.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the maximum amount of paid orders?
+--------------------------------------------------
+{
+  "question": "What is the maximum amount of paid orders?",
+  "query_plan": "Find the maximum total_amount from the orders table where paid_at is not null.",
+  "sql": "SELECT MAX(total_amount) FROM orders WHERE NOT paid_at IS NULL LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "MAX(total_amount)"
+  ],
+  "rows": [
+    [
+      "450.00"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the earliest paid_at time among paid orders?
+--------------------------------------------------
+{
+  "question": "What is the earliest paid_at time among paid orders?",
+  "query_plan": "Filter for paid orders and select the earliest paid_at time.",
+  "sql": "SELECT MIN(paid_at) AS earliest_paid_time FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "earliest_paid_time"
+  ],
+  "rows": [
+    [
+      "2026-03-10T09:05:00"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the latest paid_at time among paid orders?
+--------------------------------------------------
+{
+  "question": "What is the latest paid_at time among paid orders?",
+  "query_plan": "Filter orders by status 'paid', then select the maximum paid_at timestamp.",
+  "sql": "SELECT MAX(paid_at) AS latest_paid_at FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "latest_paid_at"
+  ],
+  "rows": [
+    [
+      "2026-03-27T18:02:00"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Count users by country.
+--------------------------------------------------
+{
+  "question": "Count users by country.",
+  "query_plan": "Join the users table with itself to count users by country.",
+  "sql": "SELECT COUNT(DISTINCT user1.country) AS total_users, user1.country FROM users AS user1 GROUP BY user1.country LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "total_users",
+    "country"
+  ],
+  "rows": [
+    [
+      1,
+      "AU"
+    ],
+    [
+      1,
+      "BR"
+    ],
+    [
+      1,
+      "CA"
+    ],
+    [
+      1,
+      "DE"
+    ],
+    [
+      1,
+      "FR"
+    ],
+    [
+      1,
+      "IN"
+    ],
+    [
+      1,
+      "JP"
+    ],
+    [
+      1,
+      "KR"
+    ],
+    [
+      1,
+      "SG"
+    ],
+    [
+      1,
+      "UK"
+    ],
+    [
+      1,
+      "US"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Count users by channel.
+--------------------------------------------------
+{
+  "question": "Count users by channel.",
+  "query_plan": "Construct a SELECT query that aggregates users by their channel.",
+  "sql": "SELECT channel, COUNT(*) AS user_count FROM users GROUP BY channel LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "channel",
+    "user_count"
+  ],
+  "rows": [
+    [
+      "ads",
+      7
+    ],
+    [
+      "organic",
+      7
+    ],
+    [
+      "referral",
+      6
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Group paid order total amount by country.
+--------------------------------------------------
+{
+  "question": "Group paid order total amount by country.",
+  "query_plan": "Join the orders table with the users table on user_id, then group the result by the users' country.",
+  "sql": null,
+  "uncertainty_note": null,
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "cache_status": "rejected",
+  "is_cached": true
+}
+
+==================================================
+Q: Count distinct paid users by country.
+--------------------------------------------------
+{
+  "question": "Count distinct paid users by country.",
+  "query_plan": "Use the orders table to filter for paid users, then join with users table to get country information, and finally use a GROUP BY clause to group by country.",
+  "sql": null,
+  "uncertainty_note": "SQL validation/qualification failed: Column 'user_id' could not be resolved. Line: 1, Col: 90",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL validation/qualification failed: Column 'user_id' could not be resolved. Line: 1, Col: 90",
+  "is_cached": false
+}
+
+==================================================
+Q: Count paid orders by day.
+--------------------------------------------------
+{
+  "question": "Count paid orders by day.",
+  "query_plan": "Construct a SELECT statement to count paid orders by day.",
+  "sql": "SELECT DATE(paid_at) AS paid_date, COUNT(*) AS paid_orders FROM orders WHERE status = 'paid' GROUP BY DATE(paid_at) LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "paid_date",
+    "paid_orders"
+  ],
+  "rows": [
+    [
+      "2026-03-10",
+      1
+    ],
+    [
+      "2026-03-11",
+      1
+    ],
+    [
+      "2026-03-15",
+      1
+    ],
+    [
+      "2026-03-16",
+      1
+    ],
+    [
+      "2026-03-17",
+      1
+    ],
+    [
+      "2026-03-19",
+      1
+    ],
+    [
+      "2026-03-21",
+      1
+    ],
+    [
+      "2026-03-23",
+      2
+    ],
+    [
+      "2026-03-24",
+      1
+    ],
+    [
+      "2026-03-25",
+      2
+    ],
+    [
+      "2026-03-26",
+      1
+    ],
+    [
+      "2026-03-27",
+      1
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total amount of paid orders created between 2026-03-23 and 2026-03-25 inclusive?
+--------------------------------------------------
+{
+  "question": "What is the total amount of paid orders created between 2026-03-23 and 2026-03-25 inclusive?",
+  "query_plan": "The query plan is to use a WHERE clause to filter orders based on the creation date, and another WHERE clause to filter orders that are paid. Then, we'll apply an aggregate function (SUM) to calculate the total amount of paid orders.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many paid orders were created on 2026-03-23?
+--------------------------------------------------
+{
+  "question": "How many paid orders were created on 2026-03-23?",
+  "query_plan": "Filter orders by status 'paid' and creation date '2026-03-23', then count the results.",
+  "sql": "SELECT COUNT(*) AS total_paid_orders FROM orders WHERE status = 'paid' AND DATE(created_at) = '2026-03-23' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "total_paid_orders"
+  ],
+  "rows": [
+    [
+      2
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total amount of refunded orders created on or after 2026-03-20?
+--------------------------------------------------
+{
+  "question": "What is the total amount of refunded orders created on or after 2026-03-20?",
+  "query_plan": "Join the orders and order_items tables to filter for refunded orders, then use a date condition in the WHERE clause to target orders created on or after 2026-03-20.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which users have placed refunded orders?
+--------------------------------------------------
+{
+  "question": "Which users have placed refunded orders?",
+  "query_plan": "Filter orders by status, then get user IDs, and finally query the users table to retrieve the desired information.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many non-VIP users have placed paid orders?
+--------------------------------------------------
+{
+  "question": "How many non-VIP users have placed paid orders?",
+  "query_plan": "Join the `users` table with the `orders` table on `user_id`, filter for non-VIP users, and then filter for paid orders.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many users have never placed an order?
+--------------------------------------------------
+{
+  "question": "How many users have never placed an order?",
+  "query_plan": "To answer this question, we will use the orders table and perform a LEFT JOIN with the users table to count the number of users who do not exist in the orders table.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which user has the highest total amount of paid orders?
+--------------------------------------------------
+{
+  "question": "Which user has the highest total amount of paid orders?",
+  "query_plan": "Join orders and users tables based on user_id, filter for paid orders, group by user_id, sort by total_amount.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which country has the most paid orders?
+--------------------------------------------------
+{
+  "question": "Which country has the most paid orders?",
+  "query_plan": "Plan to use the `orders` table, join with the `users` table on `user_id`, filter for paid orders and group by `country`. Then sort the results by count of paid orders in descending order.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which channels have generated paid order revenue? Return channel and total revenue.
+--------------------------------------------------
+{
+  "question": "Which channels have generated paid order revenue? Return channel and total revenue.",
+  "query_plan": "Join orders and users on user_id to filter by is_vip. Then, aggregate by channel and sum the total_amount for paid orders.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total paid order amount for VIP users only?
+--------------------------------------------------
+{
+  "question": "What is the total paid order amount for VIP users only?",
+  "query_plan": "Filter on VIP users, then aggregate and filter by paid orders.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total paid order amount for non-VIP users only?
+--------------------------------------------------
+{
+  "question": "What is the total paid order amount for non-VIP users only?",
+  "query_plan": "Use orders and users tables to filter out VIP users, then join with orders to get paid orders. Finally, use a SUM function to calculate the total paid order amount.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many distinct countries have at least one paid order?
+--------------------------------------------------
+{
+  "question": "How many distinct countries have at least one paid order?",
+  "query_plan": "Join orders and users on user_id to get the country information. Then, filter for paid orders and group by country.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['users']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['users']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many units has each product sold?
+--------------------------------------------------
+{
+  "question": "How many units has each product sold?",
+  "query_plan": "Join the orders table with order_items to get the total quantity of each product, then group and count by product.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the sales amount for each product?
+--------------------------------------------------
+{
+  "question": "What is the sales amount for each product?",
+  "query_plan": "Join order_items with products to calculate total sales amount for each product.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many units were sold in the Accessories category?
+--------------------------------------------------
+{
+  "question": "How many units were sold in the Accessories category?",
+  "query_plan": "Count the number of order items with product_id matching a specific category, then group by that count.",
+  "sql": null,
+  "uncertainty_note": "SQL validation/qualification failed: Column 'product_id' could not be resolved. Line: 1, Col: 64",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL validation/qualification failed: Column 'product_id' could not be resolved. Line: 1, Col: 64",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the sales amount of the Accessories category?
+--------------------------------------------------
+{
+  "question": "What is the sales amount of the Accessories category?",
+  "query_plan": "Join orders and order_items to aggregate sales by product category, then filter for Accessories.",
+  "sql": null,
+  "uncertainty_note": "SQL validation/qualification failed: Column 'subtotal' could not be resolved. Line: 1, Col: 19",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL validation/qualification failed: Column 'subtotal' could not be resolved. Line: 1, Col: 19",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the sales amount of the Electronics category?
+--------------------------------------------------
+{
+  "question": "What is the sales amount of the Electronics category?",
+  "query_plan": "Join orders and order_items to calculate total sales for each product, then filter products by category.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items', 'orders']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items', 'orders']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which products are included in order 114?
+--------------------------------------------------
+{
+  "question": "Which products are included in order 114?",
+  "query_plan": "Join the orders table with the order_items table on the order_id column, then select distinct product names from the products table where the product_id matches the one from the order_items table.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['products']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['products']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which order has the highest total_amount?
+--------------------------------------------------
+{
+  "question": "Which order has the highest total_amount?",
+  "query_plan": "Sort orders by total_amount in descending order, return the first row.",
+  "sql": "SELECT * FROM orders ORDER BY total_amount DESC LIMIT 1",
+  "uncertainty_note": null,
+  "columns": [
+    "id",
+    "user_id",
+    "status",
+    "total_amount",
+    "created_at",
+    "paid_at"
+  ],
+  "rows": [
+    [
+      116,
+      15,
+      "paid",
+      "450.00",
+      "2026-03-25T10:45:00",
+      "2026-03-25T10:50:00"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Which product category generated the highest sales amount?
+--------------------------------------------------
+{
+  "question": "Which product category generated the highest sales amount?",
+  "query_plan": "Join orders and order_items to calculate total sales for each product, then group by product category.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items', 'orders']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items', 'orders']",
+  "is_cached": false
+}
+
+==================================================
+Q: Which product sold the most units?
+--------------------------------------------------
+{
+  "question": "Which product sold the most units?",
+  "query_plan": "Get the sum of quantity for each product and find the one with the maximum value.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['products']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['products']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many products have never appeared in any order_items row?
+--------------------------------------------------
+{
+  "question": "How many products have never appeared in any order_items row?",
+  "query_plan": "The query will use a LEFT JOIN and a subquery to find products that do not appear in the order_items table.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['products']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['products']",
+  "is_cached": false
+}
+
+==================================================
+Q: List the products that have never been ordered.
+--------------------------------------------------
+{
+  "question": "List the products that have never been ordered.",
+  "query_plan": "Use a subquery to find orders with products, then exclude those products from the main query.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the average unit_price across all order_items?
+--------------------------------------------------
+{
+  "question": "What is the average unit_price across all order_items?",
+  "query_plan": "Average the unit_price in order_items table.",
+  "sql": "SELECT AVG(unit_price) AS avg_unit_price FROM order_items LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "avg_unit_price"
+  ],
+  "rows": [
+    [
+      "76.131905"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total subtotal of all order_items?
+--------------------------------------------------
+{
+  "question": "What is the total subtotal of all order_items?",
+  "query_plan": "Construct a SELECT statement that sums the subtotal column in the order_items table.",
+  "sql": "SELECT SUM(subtotal) FROM order_items LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(subtotal)"
+  ],
+  "rows": [
+    [
+      "1769.96"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Which categories have at least two units sold? Return category and total units.
+--------------------------------------------------
+{
+  "question": "Which categories have at least two units sold? Return category and total units.",
+  "query_plan": "Join order_items with products to aggregate quantity by category. Use a subquery to count distinct order items.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: How many paid orders include more than one order item?
+--------------------------------------------------
+{
+  "question": "How many paid orders include more than one order item?",
+  "query_plan": "Join the orders and order_items tables to filter out unpaid orders, then count the number of distinct orders with more than one order item.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['orders']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['orders']",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the total revenue contributed by orders that contain more than one order item?
+--------------------------------------------------
+{
+  "question": "What is the total revenue contributed by orders that contain more than one order item?",
+  "query_plan": "Join the orders table with the order_items table to filter out single-item orders, then sum up the subtotal for each order.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['order_items']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['order_items']",
+  "is_cached": false
+}
+
+==================================================
+Q: Who are the recent high-value users?
+--------------------------------------------------
+{
+  "question": "Who are the recent high-value users?",
+  "query_plan": "Define 'recent' and determine which users meet the high-value criteria.",
+  "sql": null,
+  "uncertainty_note": "The question refers to subjective words ('recent') that are undefined in the schema. To answer safely, a definition for 'recent' would be required.",
+  "columns": [],
+  "rows": [],
+  "error": "The question refers to subjective words ('recent') that are undefined in the schema. To answer safely, a definition for 'recent' would be required.",
+  "is_cached": false
+}
+
+==================================================
+Q: What is the retention rate?
+--------------------------------------------------
+{
+  "question": "What is the retention rate?",
+  "query_plan": "To generate a query for retention rate, we need to define what 'retention rate' means in this context. Based on the provided schema, it seems that 'retention rate' might refer to the percentage of users who place at least one order after their initial purchase. We will assume this definition.",    
+  "sql": null,
+  "uncertainty_note": "Assumption made: The definition of retention rate is not explicitly stated in the schema, and we have had to make an educated guess based on common understanding of the term. A more precise answer would require additional context or a clear definition from the business side.",
+  "columns": [],
+  "rows": [],
+  "error": "Assumption made: The definition of retention rate is not explicitly stated in the schema, and we have had to make an educated guess based on common understanding of the term. A more precise answer would require additional context or a clear definition from the business side.",
+  "is_cached": false
+}
+
+==================================================
+Q: Which channel is the best?
+--------------------------------------------------
+{
+  "question": "Which channel is the best?",
+  "query_plan": "The question asks for a subjective ranking, which cannot be answered safely.",
+  "sql": null,
+  "uncertainty_note": "The schema does not provide a clear definition of what 'best' means, making it impossible to generate an answerable query.",
+  "columns": [],
+  "rows": [],
+  "error": "The schema does not provide a clear definition of what 'best' means, making it impossible to generate an answerable query.",
+  "is_cached": false
+}
+
+==================================================
+Q: Who are the churned users?
+--------------------------------------------------
+{
+  "question": "Who are the churned users?",
+  "query_plan": "Identify users with no recent orders or payments.",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['orders']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['orders']",
+  "is_cached": false
+}
+
+==================================================
+Q: Delete all cancelled orders.
+--------------------------------------------------
+{
+  "question": "Delete all cancelled orders.",
+  "query_plan": [
+    {
+      "step": "1. Check the status column for cancelled orders",
+      "operation": "SELECT",
+      "table": "orders",
+      "columns": [
+        "status"
+      ]
+    }
+  ],
+  "sql": null,
+  "uncertainty_note": null,
+  "columns": [],
+  "rows": [],
+  "error": "Self-correction failed: Admin operations (DELETE) are currently disabled.",
+  "is_cached": false
+}

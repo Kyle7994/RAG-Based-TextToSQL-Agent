@@ -93,6 +93,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - .:/app
       - ./app:/app/app
       - ./requirements.txt:/app/requirements.txt
     command: >

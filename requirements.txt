@@ -1,14 +1,12 @@
-# requirements.txt
-
 fastapi
 uvicorn[standard]
 pydantic
-sqlalchemy
+httpx
+tenacity
+sqlglot
 pymysql
 psycopg[binary]
 redis
-httpx
-sqlglot
-pgvector
+PyYAML
+tqdm
 cryptography
-tenacity>=8.2.3

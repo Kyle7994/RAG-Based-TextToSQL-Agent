@@ -148,3 +148,6 @@ Schema Awareness → Pattern Learning → Reasoned Execution
 * **RAG alone is not enough**
 * **Few-shot enables structure understanding**
 * **CoT enables trust and debuggability**
+
+
+// docker compose exec api python -m app.scripts.auto_profiler

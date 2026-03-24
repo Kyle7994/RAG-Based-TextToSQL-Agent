@@ -1,0 +1,886 @@
+vc7914@Luck:/mnt/c/Users/c9414/Desktop/RAG_Based_TextToSQL_Agent$ chmod +x test_nl2sql.sh
+./test_nl2sql.sh
+
+==================================================
+Q: paid 请问订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "paid 请问订单总金额是多少？",
+  "query_plan": "Step 1: Filter orders with paid status, Step 2: Calculate total amount",
+  "sql": "SELECT SUM(total_amount) FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      "400.50"
+    ]
+  ],
+  "error": null,
+  "is_cached": true
+}
+
+==================================================
+Q: paid 订单有多少个？
+--------------------------------------------------
+{
+  "question": "paid 订单有多少个？",
+  "query_plan": "Step 1: Filter paid orders, Step 2: Count the results",
+  "sql": "SELECT COUNT(*) FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "COUNT(*)"
+  ],
+  "rows": [
+    [
+      3
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: refunded 订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "refunded 订单总金额是多少？",
+  "query_plan": "Step 1: Join orders and products on orders.user_id = products.id, Step 2: Filter orders with status 'refunded', Step 3: Calculate the total amount of refunded orders",
+  "sql": "SELECT SUM(o.total_amount) AS total_refund FROM orders AS o JOIN products AS p ON o.user_id = p.id WHERE o.status = 'refunded' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "total_refund"
+  ],
+  "rows": [
+    [
+      null
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 所有订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "所有订单总金额是多少？",
+  "query_plan": "Step 1: Aggregate total_amount from orders, Step 2: Summarize with GROUP BY",
+  "sql": "SELECT SUM(total_amount) FROM orders LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      450.5
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 一共有多少个用户？
+--------------------------------------------------
+{
+  "question": "一共有多少个用户？",
+  "query_plan": "Step 1: Count the number of users",
+  "sql": "SELECT COUNT(*) AS count FROM users LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "count"
+  ],
+  "rows": [
+    [
+      3
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: VIP 用户有多少个？
+--------------------------------------------------
+{
+  "question": "VIP 用户有多少个？",
+  "query_plan": "Step 1: Join orders and users, Step 2: Filter VIP users",
+  "sql": "SELECT COUNT(*) AS count FROM users JOIN orders ON users.id = orders.user_id WHERE is_vip = 1 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "count"
+  ],
+  "rows": [
+    [
+      2
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 按国家统计用户数
+--------------------------------------------------
+{
+  "question": "按国家统计用户数",
+  "query_plan": "Step 1: Aggregate users by country",
+  "sql": "SELECT country, COUNT(*) AS user_count FROM users GROUP BY country LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "country",
+    "user_count"
+  ],
+  "rows": [
+    [
+      "US",
+      2
+    ],
+    [
+      "CA",
+      1
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 按 channel 统计用户数
+--------------------------------------------------
+{
+  "question": "按 channel 统计用户数",
+  "query_plan": "Step 1: Filter users by channel, Step 2: Count distinct users",
+  "sql": "SELECT COUNT(DISTINCT u.id) AS user_count FROM users AS u WHERE NOT u.channel IS NULL GROUP BY u.channel LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "user_count"
+  ],
+  "rows": [
+    [
+      1
+    ],
+    [
+      1
+    ],
+    [
+      1
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: paid 订单平均金额是多少？
+--------------------------------------------------
+{
+  "question": "paid 订单平均金额是多少？",
+  "query_plan": "Step 1: Group orders by paid_at, Step 2: Calculate average total_amount",
+  "sql": "SELECT AVG(total_amount) AS avg_paid_order_amount FROM orders WHERE NOT paid_at IS NULL GROUP BY DATE(paid_at) LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "avg_paid_order_amount"
+  ],
+  "rows": [
+    [
+      120.5
+    ],
+    [
+      80
+    ],
+    [
+      50
+    ],
+    [
+      200
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 最大的 paid 订单金额是多少？
+--------------------------------------------------
+{
+  "question": "最大的 paid 订单金额是多少？",
+  "query_plan": "Step 1: Filter orders by status 'paid', Step 2: Calculate total amount",
+  "sql": "SELECT SUM(o.total_amount) AS max_paid_order_amount FROM orders AS o WHERE NOT o.paid_at IS NULL AND o.status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "max_paid_order_amount"
+  ],
+  "rows": [
+    [
+      400.5
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 按国家统计 paid 订单总金额
+--------------------------------------------------
+{
+  "question": "按国家统计 paid 订单总金额",
+  "query_plan": "Step 1: Join orders with users on user_id, Step 2: Group by country and calculate SUM(paid_at) as total_amount",
+  "sql": "SELECT u.country, SUM(o.total_amount) AS total_amount FROM orders AS o JOIN users AS u ON o.user_id = u.id WHERE NOT o.paid_at IS NULL GROUP BY u.country LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "country",
+    "total_amount"
+  ],
+  "rows": [
+    [
+      "US",
+      370.5
+    ],
+    [
+      "CA",
+      80
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 哪个用户的 paid 订单总金额最高？
+--------------------------------------------------
+{
+  "question": "哪个用户的 paid 订单总金额最高？",
+  "query_plan": "Step 1: Join orders and order_items on order_id, Step 2: Group by user_id and find the maximum total amount",
+  "sql": null,
+  "uncertainty_note": "Unqualified column 'max_paid_amount' was not found in referenced tables.",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: Unqualified column 'max_paid_amount' was not found in referenced tables.",
+  "is_cached": false
+}
+
+==================================================
+Q: 没有下过单的用户有多少？
+--------------------------------------------------
+{
+  "question": "没有下过单的用户有多少？",
+  "query_plan": "Step 1: Filter users without orders, Step 2: Count the result",
+  "sql": "SELECT COUNT(*) FROM users WHERE NOT id IN (SELECT user_id FROM orders) LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "COUNT(*)"
+  ],
+  "rows": [
+    [
+      0
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 下过退款单的用户是谁？
+--------------------------------------------------
+{
+  "question": "下过退款单的用户是谁？",
+  "query_plan": "Step 1: Join order_items with orders to filter refunded orders, Step 2: Join the result with users on user ID",
+  "sql": null,
+  "uncertainty_note": "Column 'o.order_id' references unknown table/alias 'o'.",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: Column 'o.order_id' references unknown table/alias 'o'.",
+  "is_cached": false
+}
+
+==================================================
+Q: 不是 VIP 且下过 paid 订单的用户有多少？
+--------------------------------------------------
+{
+  "question": "不是 VIP 且下过 paid 订单的用户有多少？",
+  "query_plan": "Step 1: Filter out non-VIP users, Step 2: Count the number of paid orders for each remaining user",
+  "sql": null,
+  "uncertainty_note": "Unqualified column 'is_vip' was not found in referenced tables.",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: Unqualified column 'is_vip' was not found in referenced tables.",
+  "is_cached": false
+}
+
+==================================================
+Q: 每个商品卖了多少件？
+--------------------------------------------------
+{
+  "question": "每个商品卖了多少件？",
+  "query_plan": "Step 1: Aggregate product sales, Step 2: Group by product",
+  "sql": "SELECT p.name, SUM(oi.quantity) AS total_sales FROM products AS p JOIN order_items AS oi ON p.id = oi.product_id GROUP BY p.name LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "name",
+    "total_sales"
+  ],
+  "rows": [
+    [
+      "Phone Case",
+      2
+    ],
+    [
+      "USB-C Cable",
+      4
+    ],
+    [
+      "Bluetooth Speaker",
+      2
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 每个商品销售额是多少？
+--------------------------------------------------
+{
+  "question": "每个商品销售额是多少？",
+  "query_plan": "Step 1: Aggregate by product, Step 2: Calculate total sales",
+  "sql": "SELECT p.name, SUM(oi.subtotal) AS total_sales FROM products AS p JOIN order_items AS oi ON p.id = oi.product_id GROUP BY p.name LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "name",
+    "total_sales"
+  ],
+  "rows": [
+    [
+      "Phone Case",
+      39.98
+    ],
+    [
+      "USB-C Cable",
+      39.96
+    ],
+    [
+      "Bluetooth Speaker",
+      99.98
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Accessories 类别一共卖了多少件？
+--------------------------------------------------
+{
+  "question": "Accessories 类别一共卖了多少件？",
+  "query_plan": "Step 1: Join order_items and orders, Step 2: Filter by product category",
+  "sql": null,
+  "uncertainty_note": "SQL references tables not present in schema context: ['products']",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: SQL references tables not present in schema context: ['products']",
+  "is_cached": false
+}
+
+==================================================
+Q: Accessories 类别销售额是多少？
+--------------------------------------------------
+{
+  "question": "Accessories 类别销售额是多少？",
+  "query_plan": "Step 1: Join order_items and products on product_id, Step 2: Filter by category 'Accessories' and calculate sum of subtotal",
+  "sql": "SELECT SUM(order_items.subtotal) FROM order_items INNER JOIN products ON order_items.product_id = products.id WHERE products.category = 'Accessories' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(order_items.subtotal)"
+  ],
+  "rows": [
+    [
+      79.94
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: Electronics 类别销售额是多少？
+--------------------------------------------------
+{
+  "question": "Electronics 类别销售额是多少？",
+  "query_plan": "Step 1: Join order_items with products on product_id, Step 2: Filter by category 'Electronics' and aggregate subtotal",
+  "sql": "SELECT SUM(subtotal) AS total_sales FROM order_items JOIN products ON order_items.product_id = products.id WHERE products.category = 'Electronics' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "total_sales"
+  ],
+  "rows": [
+    [
+      99.98
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 订单 101 包含哪些商品？
+--------------------------------------------------
+{
+  "question": "订单 101 包含哪些商品？",
+  "query_plan": "Step 1: Join orders and order_items on order_id, Step 2: Filter by the target order",
+  "sql": "SELECT oi.product_id FROM orders AS o JOIN order_items AS oi ON o.id = oi.order_id WHERE o.id = 101 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "product_id"
+  ],
+  "rows": [
+    [
+      1001
+    ],
+    [
+      1002
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 2026-03-10 到 2026-03-11 的 paid 订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "2026-03-10 到 2026-03-11 的 paid 订单总金额是多少？",
+  "query_plan": "Step 1: Filter orders by paid_at between specified dates, Step 2: Calculate total_amount",
+  "sql": "SELECT SUM(total_amount) FROM orders WHERE paid_at BETWEEN '2026-03-10' AND '2026-03-11' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      120.5
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 2026-03-12 的 paid 订单数是多少？
+--------------------------------------------------
+{
+  "question": "2026-03-12 的 paid 订单数是多少？",
+  "query_plan": "Step 1: Filter orders by paid_at, Step 2: Count the filtered results",
+  "sql": "SELECT COUNT(*) FROM orders WHERE paid_at = '2026-03-12' AND status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "COUNT(*)"
+  ],
+  "rows": [
+    [
+      0
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 最早的 paid_at 是什么时候？
+--------------------------------------------------
+{
+  "question": "最早的 paid_at 是什么时候？",
+  "query_plan": "Step 1: Filter orders with paid status, Step 2: Get the earliest paid_at",
+  "sql": "SELECT MIN(paid_at) AS earliest_paid_at FROM orders WHERE NOT paid_at IS NULL LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "earliest_paid_at"
+  ],
+  "rows": [
+    [
+      "2026-03-10T09:05:00"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 最晚的 paid_at 是什么时候？
+--------------------------------------------------
+{
+  "question": "最晚的 paid_at 是什么时候？",
+  "query_plan": "Step 1: Filter by paid status, Step 2: Get the latest paid timestamp",
+  "sql": "SELECT MAX(paid_at) AS latest_paid_at FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "latest_paid_at"
+  ],
+  "rows": [
+    [
+      "2026-03-15T13:04:00"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 最近的高价值用户是谁？
+--------------------------------------------------
+{
+  "question": "最近的高价值用户是谁？",
+  "query_plan": "Step 1: Filter orders by recent, Step 2: Group and order results",
+  "sql": null,
+  "uncertainty_note": "The concept of 'recent' is subjective and not grounded in the schema. To answer this question safely, a clear definition of what constitutes 'recent' would be required.",
+  "columns": [],
+  "rows": [],
+  "error": "The concept of 'recent' is subjective and not grounded in the schema. To answer this question safely, a clear definition of what constitutes 'recent' would be required.",       
+  "is_cached": false
+}
+
+==================================================
+Q: 最活跃的用户是谁？
+--------------------------------------------------
+{
+  "question": "最活跃的用户是谁？",
+  "query_plan": "Step 1: Group orders by user, Step 2: Order the result by total order value",
+  "sql": null,
+  "uncertainty_note": "Unqualified column 'total_order_value' was not found in referenced tables.",
+  "columns": [],
+  "rows": [],
+  "error": "Semantic validation failed: Unqualified column 'total_order_value' was not found in referenced tables.",
+  "is_cached": false
+}
+
+==================================================
+Q: 复购率是多少？
+--------------------------------------------------
+{
+  "question": "复购率是多少？",
+  "query_plan": "Step 1: Correct the GROUP BY clause, Step 2: Simplify the CASE statement",
+  "sql": null,
+  "uncertainty_note": null,
+  "columns": [],
+  "rows": [],
+  "error": "Self-correction failed: (1111, 'Invalid use of group function')",
+  "is_cached": false
+}
+
+==================================================
+Q: 留存率是多少？
+--------------------------------------------------
+{
+  "question": "留存率是多少？",
+  "query_plan": "Step 1: Define retention rate calculation, Step 2: Aggregate results",
+  "sql": "SELECT COUNT(DISTINCT users.id) / (SELECT COUNT(*) FROM users) AS retention_rate FROM users WHERE is_vip = 1 AND signup_at <= DATE_SUB(CURRENT_DATE, INTERVAL '1' YEAR) LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "retention_rate"
+  ],
+  "rows": [
+    [
+      0
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 转化率是多少？
+--------------------------------------------------
+{
+  "question": "转化率是多少？",
+  "query_plan": "Step 1: Join users and orders, Step 2: Filter orders by 'paid_at' and calculate conversion rate",
+  "sql": "SELECT COUNT(DISTINCT u.id) AS converted_users, COUNT(o.id) AS total_orders FROM users AS u JOIN orders AS o ON u.id = o.user_id WHERE NOT o.paid_at IS NULL GROUP BY u.id HAVING COUNT(CASE WHEN o.status = 'paid' THEN 1 ELSE NULL END) > 0 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "converted_users",
+    "total_orders"
+  ],
+  "rows": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 最好的渠道是哪个？
+--------------------------------------------------
+{
+  "question": "最好的渠道是哪个？",
+  "query_plan": "Step 1: None",
+  "sql": null,
+  "uncertainty_note": "The question depends on subjective word 'best', which is undefined in the schema.",
+  "columns": [],
+  "rows": [],
+  "error": "The question depends on subjective word 'best', which is undefined in the schema.",
+  "is_cached": false
+}
+
+==================================================
+Q: 大客户有哪些？
+--------------------------------------------------
+{
+  "question": "大客户有哪些？",
+  "query_plan": "Step 1: Filter users by is_vip=1, Step 2: None needed",
+  "sql": "SELECT email FROM users WHERE is_vip = 1 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "email"
+  ],
+  "rows": [
+    [
+      "alice@example.com"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 流失用户是谁？
+--------------------------------------------------
+{
+  "question": "流失用户是谁？",
+  "query_plan": "Step 1: Define lost users, Step 2: Filter orders",
+  "sql": "SELECT u.email FROM users AS u LEFT JOIN orders AS o ON u.id = o.user_id WHERE NOT o.status LIKE 'paid%' AND o.created_at < DATE_SUB(CURRENT_DATE, INTERVAL '3' MONTH) AND u.is_vip = 0 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "email"
+  ],
+  "rows": [],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 删除所有订单
+--------------------------------------------------
+{
+  "question": "删除所有订单",
+  "query_plan": "Step 1: Get the orders table schema, Step 2: Delete all rows from the orders table",
+  "sql": null,
+  "uncertainty_note": null,
+  "columns": [],
+  "rows": [],
+  "error": "Self-correction failed: Admin operations (DELETE) are currently disabled.",
+  "is_cached": false
+}
+
+==================================================
+Q: 把 Bob 改成 VIP
+--------------------------------------------------
+{
+  "question": "把 Bob 改成 VIP",
+  "query_plan": "Step 1: Alter the SQL to update the correct column, Step 2: Disable admin operations",
+  "sql": null,
+  "uncertainty_note": null,
+  "columns": [],
+  "rows": [],
+  "error": "Self-correction failed: Admin operations (UPDATE) are currently disabled.",
+  "is_cached": false
+}
+
+==================================================
+Q: 清空 users 表
+--------------------------------------------------
+{
+  "question": "清空 users 表",
+  "query_plan": "Step 1: Check if the users table exists, Step 2: Clear table data",
+  "sql": null,
+  "uncertainty_note": null,
+  "columns": [],
+  "rows": [],
+  "error": "Self-correction failed: Admin operations (DELETE) are currently disabled.",
+  "is_cached": false
+}
+
+==================================================
+Q: drop orders 表
+--------------------------------------------------
+{
+  "question": "drop orders 表",
+  "query_plan": "Step 1: ...",
+  "sql": null,
+  "uncertainty_note": "The DROP TABLE statement requires the table name to be specified, but 'drop orders 表' does not match any existing table in the schema. The '表' character is likely a typo or a non-standard notation.",
+  "columns": [],
+  "rows": [],
+  "error": "The DROP TABLE statement requires the table name to be specified, but 'drop orders 表' does not match any existing table in the schema. The '表' character is likely a typo or a non-standard notation.",
+  "is_cached": false
+}
+
+==================================================
+Q: paid 请问订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "paid 请问订单总金额是多少？",
+  "query_plan": "Step 1: Filter orders with paid status, Step 2: Calculate total amount",
+  "sql": "SELECT SUM(total_amount) FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      "400.50"
+    ]
+  ],
+  "error": null,
+  "is_cached": true
+}
+
+==================================================
+Q: 最近的高价值用户是谁？
+--------------------------------------------------
+{
+  "question": "最近的高价值用户是谁？",
+  "query_plan": "Step 1: Filter orders by recent, Step 2: Group and order results",
+  "sql": null,
+  "uncertainty_note": "The concept of 'recent' is subjective and not grounded in the schema. To answer this question safely, a clear definition of what constitutes 'recent' would be required.",
+  "columns": [],
+  "rows": [],
+  "error": "The concept of 'recent' is subjective and not grounded in the schema. To answer this question safely, a clear definition of what constitutes 'recent' would be required.",
+  "is_cached": true
+}
+
+==================================================
+Q:    paid    请问订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "   paid    请问订单总金额是多少？   ",
+  "query_plan": "Step 1: Filter orders with paid status, Step 2: Calculate total amount",
+  "sql": "SELECT SUM(total_amount) FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      "400.50"
+    ]
+  ],
+  "error": null,
+  "is_cached": true
+}
+
+==================================================
+Q: status 为 paid 的订单总金额是多少？
+--------------------------------------------------
+{
+  "question": "status 为 paid 的订单总金额是多少？",
+  "query_plan": "Step 1: Filter orders by status, Step 2: Sum total_amount",
+  "sql": "SELECT SUM(total_amount) FROM orders WHERE status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "SUM(total_amount)"
+  ],
+  "rows": [
+    [
+      400.5
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: paid 订单有多少？
+--------------------------------------------------
+{
+  "question": "paid 订单有多少？",
+  "query_plan": "Step 1: Filter orders by paid_at, Step 2: Count the number of remaining orders",
+  "sql": "SELECT COUNT(*) FROM orders WHERE NOT paid_at IS NULL LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "COUNT(*)"
+  ],
+  "rows": [
+    [
+      4
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: refunded 订单有多少？
+--------------------------------------------------
+{
+  "question": "refunded 订单有多少？",
+  "query_plan": "Step 1: Filter orders with status 'paid' and then count them",
+  "sql": "SELECT COUNT(*) AS num_orders FROM orders WHERE NOT paid_at IS NULL AND status = 'paid' LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "num_orders"
+  ],
+  "rows": [
+    [
+      3
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: VIP 用户是谁？
+--------------------------------------------------
+{
+  "question": "VIP 用户是谁？",
+  "query_plan": "Step 1: Filter users table by is_vip = 1, Step 2: None",
+  "sql": "SELECT email FROM users WHERE is_vip = 1 LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "email"
+  ],
+  "rows": [
+    [
+      "alice@example.com"
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
+
+==================================================
+Q: 按国家统计 paid 用户数（去重）
+--------------------------------------------------
+{
+  "question": "按国家统计 paid 用户数（去重）",
+  "query_plan": "Step 1: Group by country, Step 2: Count distinct paid users",
+  "sql": "SELECT u.country, COUNT(DISTINCT o.user_id) AS paid_users FROM orders AS o JOIN users AS u ON o.user_id = u.id WHERE NOT o.paid_at IS NULL GROUP BY u.country LIMIT 100",
+  "uncertainty_note": null,
+  "columns": [
+    "country",
+    "paid_users"
+  ],
+  "rows": [
+    [
+      "CA",
+      1
+    ],
+    [
+      "US",
+      2
+    ]
+  ],
+  "error": null,
+  "is_cached": false
+}
