@@ -135,7 +135,7 @@ def _format_examples_context(similar_examples: list[dict]) -> str:
         parts.append(f"Question: {ex['question']}")
         parts.append(f"SQL: {ex['sql']}")
         parts.append("")
-    return "\\n".join(parts).strip()
+    return "\n".join(parts).strip()
 
 
 async def build_generation_context(question: str) -> tuple[str, str]:
@@ -152,8 +152,12 @@ async def build_generation_context(question: str) -> tuple[str, str]:
     question_embedding = await get_embedding(question)
 
     # Find relevant table schemas based on semantic similarity to the question.
-    relevant_schemas = search_schema_chunks(question_embedding, limit=5)
-    schema_context = "\\n\\n".join(relevant_schemas).strip()
+    relevant_schemas = search_schema_chunks(question_embedding, limit=4)
+    
+    # 【修改前】 schema_context = "\\n\\n".join(relevant_schemas).strip()
+    # 【修改后】 真正的换行符，外加一层全局替换防御旧数据
+    schema_context = "\n\n".join(relevant_schemas).strip()
+    schema_context = schema_context.replace("\\n", "\n") 
 
     # Find similar question/SQL pairs to use as few-shot examples.
     similar_examples = search_sql_examples(question_embedding, limit=2)
@@ -217,7 +221,8 @@ async def generate_sql_from_question(
 
     if not schema_context:
         return (
-            "Step 1: Search for relevant schema.\\nStep 2: Refuse because no relevant schema was found.",
+            # 【修改前】 "Step 1: Search for relevant schema.\\nStep 2: Refuse because no relevant schema was found.",
+            "Step 1: Search for relevant schema.\nStep 2: Refuse because no relevant schema was found.", # 【修改后】
             None,
             "No relevant schema context was found for this question.",
             False,

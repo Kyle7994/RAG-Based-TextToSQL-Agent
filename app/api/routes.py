@@ -46,6 +46,18 @@ class ExampleRequest(BaseModel):
 
 router = APIRouter()
 
+def _debug_payload(
+    schema_context: str | None = None,
+    examples_context: str | None = None,
+    semantic_guard_passed: bool | None = None,
+    semantic_guard_error: str | None = None,
+) -> dict:
+    return {
+        "schema_context": schema_context,
+        "examples_context": examples_context,
+        "semantic_guard_passed": semantic_guard_passed,
+        "semantic_guard_error": semantic_guard_error,
+    }
 
 @router.get("/health")
 def health():
@@ -57,22 +69,8 @@ def health():
     """
     return {"status": "ok"}
 
-
 @router.post("/query/debug")
 async def query_debug(req: QueryRequest):
-    """
-    Provides a step-by-step debug view of the Text-to-SQL generation process.
-
-    This endpoint simulates the query generation without executing the final SQL.
-    It returns intermediate data like the query plan, generated SQL, and cache status.
-    This is useful for troubleshooting and understanding the AI's reasoning.
-
-    Args:
-        req (QueryRequest): The request containing the natural language question.
-
-    Returns:
-        dict: A detailed breakdown of the generation process.
-    """
     schema_version = get_current_schema_version()
     if not schema_version:
         return {
@@ -85,17 +83,20 @@ async def query_debug(req: QueryRequest):
             "schema_version": None,
             "error": "Schema version not initialized. Please run /system/sync-schema first.",
             "is_cached": False,
+            "debug": _debug_payload(),
         }
 
-    # Check cache first for a quick response
     cached = get_cached_response(req.question, schema_version=schema_version)
     if cached:
         checked_sql = None
+        semantic_guard_passed = None
+        semantic_guard_error = None
+
         if cached.get("sql"):
             try:
                 checked_sql = validate_sql(cached["sql"])
-            except Exception:
-                checked_sql = None
+            except Exception as e:
+                semantic_guard_error = f"Cached SQL validation failed: {str(e)}"
 
         return {
             "question": req.question,
@@ -108,9 +109,14 @@ async def query_debug(req: QueryRequest):
             "cache_status": cached.get("status", "unknown"),
             "error": cached.get("error"),
             "is_cached": True,
-    }
+            "debug": _debug_payload(
+                schema_context=None,
+                examples_context=None,
+                semantic_guard_passed=semantic_guard_passed,
+                semantic_guard_error=semantic_guard_error,
+            ),
+        }
 
-    # If not cached, proceed with the generation process
     schema_context, examples_context = await build_generation_context(req.question)
 
     query_plan, sql, uncertainty, answerable = await generate_sql_from_question(
@@ -121,8 +127,9 @@ async def query_debug(req: QueryRequest):
 
     checked_sql = None
     error_msg = None
+    semantic_guard_passed = False
+    semantic_guard_error = None
 
-    # Handle cases where the question is deemed unanswerable
     if not answerable or not sql:
         rejection_reason = uncertainty or "Question cannot be answered from current schema."
 
@@ -150,15 +157,27 @@ async def query_debug(req: QueryRequest):
             "cache_status": "rejected",
             "error": rejection_reason,
             "is_cached": False,
+            "debug": _debug_payload(
+                schema_context=schema_context,
+                examples_context=examples_context,
+                semantic_guard_passed=False,
+                semantic_guard_error="Model returned answerable=false or empty SQL.",
+            ),
         }
 
-    # Validate the generated SQL syntax
     try:
         checked_sql = validate_sql(sql)
     except Exception as e:
         error_msg = f"SQL validation failed: {str(e)}"
+        semantic_guard_error = error_msg
 
-    # Cache the successful generation result for future use
+    if checked_sql and not error_msg:
+        semantic_guard_passed, semantic_guard_error = semantic_guard(
+            question=req.question,
+            sql=checked_sql,
+            schema_context=schema_context,
+        )
+
     if checked_sql and not error_msg:
         set_cached_success(
             question=req.question,
@@ -184,7 +203,140 @@ async def query_debug(req: QueryRequest):
         "cache_status": cache_status,
         "error": error_msg,
         "is_cached": False,
+        "debug": _debug_payload(
+            schema_context=schema_context,
+            examples_context=examples_context,
+            semantic_guard_passed=semantic_guard_passed,
+            semantic_guard_error=semantic_guard_error,
+        ),
     }
+# @router.post("/query/debug")
+# async def query_debug(req: QueryRequest):
+#     """
+#     Provides a step-by-step debug view of the Text-to-SQL generation process.
+
+#     This endpoint simulates the query generation without executing the final SQL.
+#     It returns intermediate data like the query plan, generated SQL, and cache status.
+#     This is useful for troubleshooting and understanding the AI's reasoning.
+
+#     Args:
+#         req (QueryRequest): The request containing the natural language question.
+
+#     Returns:
+#         dict: A detailed breakdown of the generation process.
+#     """
+#     schema_version = get_current_schema_version()
+#     if not schema_version:
+#         return {
+#             "question": req.question,
+#             "query_plan": None,
+#             "generated_sql": None,
+#             "validated_sql": None,
+#             "uncertainty_note": None,
+#             "answerable": False,
+#             "schema_version": None,
+#             "error": "Schema version not initialized. Please run /system/sync-schema first.",
+#             "is_cached": False,
+#         }
+
+#     # Check cache first for a quick response
+#     cached = get_cached_response(req.question, schema_version=schema_version)
+#     if cached:
+#         checked_sql = None
+#         if cached.get("sql"):
+#             try:
+#                 checked_sql = validate_sql(cached["sql"])
+#             except Exception:
+#                 checked_sql = None
+
+#         return {
+#             "question": req.question,
+#             "query_plan": cached.get("query_plan"),
+#             "generated_sql": cached.get("sql"),
+#             "validated_sql": checked_sql,
+#             "uncertainty_note": cached.get("uncertainty_note"),
+#             "answerable": cached.get("answerable", True),
+#             "schema_version": schema_version,
+#             "cache_status": cached.get("status", "unknown"),
+#             "error": cached.get("error"),
+#             "is_cached": True,
+#     }
+
+#     # If not cached, proceed with the generation process
+#     schema_context, examples_context = await build_generation_context(req.question)
+
+#     query_plan, sql, uncertainty, answerable = await generate_sql_from_question(
+#         req.question,
+#         schema_context=schema_context,
+#         examples_context=examples_context,
+#     )
+
+#     checked_sql = None
+#     error_msg = None
+
+#     # Handle cases where the question is deemed unanswerable
+#     if not answerable or not sql:
+#         rejection_reason = uncertainty or "Question cannot be answered from current schema."
+
+#         if should_cache_rejection(
+#             is_cached=False,
+#             answerable=False,
+#             rejection_reason=rejection_reason,
+#         ):
+#             set_cached_rejection(
+#                 question=req.question,
+#                 schema_version=schema_version,
+#                 query_plan=query_plan,
+#                 reason=rejection_reason,
+#                 uncertainty_note=uncertainty,
+#             )
+
+#         return {
+#             "question": req.question,
+#             "query_plan": query_plan,
+#             "generated_sql": None,
+#             "validated_sql": None,
+#             "uncertainty_note": uncertainty,
+#             "answerable": False,
+#             "schema_version": schema_version,
+#             "cache_status": "rejected",
+#             "error": rejection_reason,
+#             "is_cached": False,
+#         }
+
+#     # Validate the generated SQL syntax
+#     try:
+#         checked_sql = validate_sql(sql)
+#     except Exception as e:
+#         error_msg = f"SQL validation failed: {str(e)}"
+
+#     # Cache the successful generation result for future use
+#     if checked_sql and not error_msg:
+#         set_cached_success(
+#             question=req.question,
+#             schema_version=schema_version,
+#             query_plan=query_plan,
+#             sql=checked_sql,
+#             columns=[],
+#             rows=[],
+#             uncertainty_note=uncertainty,
+#         )
+#         cache_status = "success"
+#     else:
+#         cache_status = "not_cached"
+
+#     return {
+#         "question": req.question,
+#         "query_plan": query_plan,
+#         "generated_sql": sql,
+#         "validated_sql": checked_sql,
+#         "uncertainty_note": uncertainty,
+#         "answerable": answerable,
+#         "schema_version": schema_version,
+#         "cache_status": cache_status,
+#         "error": error_msg,
+#         "is_cached": False,
+#     }
 
 
 @router.post("/query/run")

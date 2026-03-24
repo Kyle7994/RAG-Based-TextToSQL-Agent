@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="http://localhost:8000/query/run"
+BASE_URL="http://localhost:8000/query/debug"
 
 run_test() {
   local question="$1"
