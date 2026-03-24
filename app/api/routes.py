@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.models.schemas import QueryRequest
 from app.services.llm_service import generate_sql_from_question
 from app.services.guard_service import validate_sql
@@ -23,7 +23,12 @@ async def query_debug(req: QueryRequest):
 @router.post("/query/run")
 async def query_run(req: QueryRequest):
     sql = await generate_sql_from_question(req.question)
-    checked_sql = validate_sql(sql)
+    
+    try:
+        checked_sql = validate_sql(sql)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     columns, rows = run_query(checked_sql)
     return {
         "question": req.question,

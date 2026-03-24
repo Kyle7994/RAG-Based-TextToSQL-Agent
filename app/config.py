@@ -7,4 +7,5 @@ MYSQL_USER = os.getenv("MYSQL_USER", "appuser")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "apppass")
 
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://ollama:11434")
-LLM_MODEL = os.getenv("LLM_MODEL", "mistral")
+LLM_MODEL = os.getenv("LLM_MODEL", "llama3")
+LLM_EMBED_MODEL = os.getenv("LLM_EMBED_MODEL", "nomic-embed-text")

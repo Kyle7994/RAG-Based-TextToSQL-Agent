@@ -8,3 +8,4 @@ redis
 httpx
 sqlglot
 pgvector
+cryptography
