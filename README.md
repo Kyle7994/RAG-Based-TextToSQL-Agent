@@ -1,3 +1,7 @@
+# 🧠 Explainable BI Agent (InsightSQL)
+
+Turn natural language into production-ready SQL — with reasoning.
+
 ## 🚀 Evolution of the BI Agent
 
 We progressively enhanced the BI Agent across three stages:
