@@ -1,22 +1,27 @@
-# 🌟 BI Agent: RAG + Few-Shot Performance Comparison
+## 🚀 Evolution of the BI Agent
 
-To demonstrate the power of our core **RAG (Retrieval-Augmented Generation)** and **Few-Shot (Knowledge Base)** mechanisms, we tested the BI Agent against a complex **4-table JOIN** e-commerce scenario.
+We progressively enhanced the BI Agent across three stages:
 
----
-
-## 📝 Test Case Question
-
-> Calculate the total items and total revenue of **'Accessories'** purchased by **non-VIP users** in each country.
-> Only include **paid orders**, and sort by total revenue in **descending order**.
+1. **Raw LLM (Schema-only RAG)**
+2. **Few-shot Learning (Knowledge Base Injection)**
+3. **Chain-of-Thought (CoT) + Explainability**
 
 ---
 
-## ❌ Before Few-Shot: Hallucination & Query Failure
+## ❌ V1: Raw LLM (Schema RAG Only)
 
-With only **Schema RAG** enabled but lacking business context, the 7B local LLM took shortcuts and hallucinated columns, resulting in an invalid SQL query.
+**Setup**
+
+* Only schema-level RAG (table + column names)
+* No business context
+* No examples
+
+---
+
+### 🧪 Result
 
 ```sql
--- ❌ Failed SQL Generation
+-- ❌ Incorrect SQL
 SELECT 
     country,
     SUM(CASE WHEN is_vip = 0 AND category = 'Accessories' THEN 1 ELSE 0 END) AS total_items,
@@ -30,20 +35,32 @@ GROUP BY country
 ORDER BY total_amount DESC;
 ```
 
-### 🚨 Failure Analysis
+---
 
-* Missed critical joins to `products` and `order_items`
-* Incorrectly assumed `category` and `price` exist in `orders` or `users`
-* Demonstrates **schema-level RAG is insufficient without business semantics**
+### 🚨 Problems
+
+* ❌ Hallucinated columns (`category`, `price`)
+* ❌ Missing joins (`order_items`, `products`)
+* ❌ Incorrect aggregation logic
+
+> Schema awareness ≠ relational understanding
 
 ---
 
-## ✅ After Few-Shot: Perfect Generation & Reasoning
+## ✅ V2: Few-shot Learning (Knowledge Base)
 
-After injecting a correct query pattern into the **pgvector knowledge base** via the `/system/add-example` endpoint, the LLM successfully generalized the 4-table JOIN logic.
+**Improvement**
+
+* Injected correct SQL patterns into **pgvector**
+* Provided multi-table JOIN examples
+* Enabled semantic retrieval of query templates
+
+---
+
+### 🧪 Result
 
 ```sql
--- ✅ Successful SQL Generation
+-- ✅ Correct SQL
 SELECT 
     u.country,
     SUM(oi.quantity) AS total_items,
@@ -61,21 +78,66 @@ ORDER BY total_amount DESC;
 
 ---
 
-## 🎯 Key Highlights
+### 🎯 Improvements
 
-* **Perfect JOINs**
-  Correctly modeled relationships:
-  `users → orders → order_items → products`
+* ✅ Correct JOIN path: `users → orders → order_items → products`
+* ✅ Accurate revenue calculation: `price × quantity`
+* ✅ No hallucinated fields
 
-* **Smart Aggregation**
-  Dynamically computed revenue using:
-  `price × quantity`
-
-* **Logical Generalization**
-  The model **learned patterns**, not just memorized examples
+> Few-shot transforms the model from guessing → pattern reasoning
 
 ---
 
-## 🧠 Takeaway
+## 🧠 V3: CoT + Explainability (Debug Mode)
 
-Few-shot learning significantly enhances **schema understanding**, **join reasoning**, and **aggregation correctness**, especially in multi-table analytical queries.
+**Improvement**
+
+* Exposed **Chain-of-Thought (query_plan)**
+* Added SQL validation layer
+* Enabled full transparency (reasoning → SQL → execution)
+
+---
+
+### 🧪 Debug Output
+
+```json
+{
+  "query_plan": "Step 1: Join users and orders (paid). Step 2: Join order_items and products (Accessories). Step 3: Filter non-VIP. Step 4: Aggregate and sort.",
+  "generated_sql": "...",
+  "validated_sql": "..."
+}
+```
+
+---
+
+### 🎯 Improvements
+
+* 🧠 Explainable reasoning (not a black box)
+* 🔍 Easier debugging of SQL errors
+* 🛡️ Safer execution via validation layer
+
+> CoT upgrades the system from correct → trustworthy
+
+---
+
+## 📊 Summary
+
+| Version     | Capability               | Result          |
+| ----------- | ------------------------ | --------------- |
+| V1 Raw      | Schema RAG only          | ❌ Hallucination |
+| V2 Few-shot | Pattern learning         | ✅ Correct SQL   |
+| V3 CoT      | Reasoning + transparency | ✅ + Explainable |
+
+---
+
+## 🧩 Key Insight
+
+This evolution shows a clear progression:
+
+```text
+Schema Awareness → Pattern Learning → Reasoned Execution
+```
+
+* **RAG alone is not enough**
+* **Few-shot enables structure understanding**
+* **CoT enables trust and debuggability**
