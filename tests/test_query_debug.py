@@ -26,6 +26,18 @@ def test_query_debug_cache_hit(client, monkeypatch):
             "error": None,
         },
     )
+    async def fake_build_generation_context(question):
+        assert question == "test"
+        return ("schema_context", "examples_context")
+
+    def fake_validate_guard_and_explain(question, sql, schema_context):
+        assert question == "test"
+        assert sql == "SELECT 1"
+        assert schema_context == "schema_context"
+        return ("SELECT 1", True, None, [], True, None)
+
+    monkeypatch.setattr("app.api.routes.build_generation_context", fake_build_generation_context)
+    monkeypatch.setattr("app.api.routes._validate_guard_and_explain", fake_validate_guard_and_explain)
 
     resp = client.post("/query/debug", json={"question": "test"})
     data = resp.json()

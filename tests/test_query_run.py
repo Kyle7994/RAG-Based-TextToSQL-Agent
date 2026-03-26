@@ -58,11 +58,26 @@ async def test_query_run_generate_only(client, monkeypatch):
     monkeypatch.setattr("app.api.routes.get_cached_response", lambda *args, **kwargs: None)
 
     async def fake_build_generation_context(question):
+        assert question == "check users"
         return ("schema_context", "examples_context")
 
     async def fake_generate_sql_from_question(question, schema_context, examples_context, debug):
         assert debug is False
         return ("plan", "SELECT * FROM users", None, True)
+
+    def fake_validate_guard_and_explain(question, sql, schema_context):
+        assert question == "check users"
+        assert sql == "SELECT * FROM users"
+        assert schema_context == "schema_context"
+        return ("SELECT * FROM users", True, None, [], True, None)
+
+    def fake_run_query(sql):
+        assert sql == "SELECT * FROM users"
+        return (["id", "name"], [[1, "alice"]])
+
+    monkeypatch.setattr("app.api.routes._validate_guard_and_explain", fake_validate_guard_and_explain)
+    monkeypatch.setattr("app.api.routes.run_query", fake_run_query)
+    monkeypatch.setattr("app.api.routes.set_cached_success", lambda *args, **kwargs: None)
 
     monkeypatch.setattr("app.api.routes.build_generation_context", fake_build_generation_context)
     monkeypatch.setattr("app.api.routes.generate_sql_from_question", fake_generate_sql_from_question)
@@ -72,5 +87,5 @@ async def test_query_run_generate_only(client, monkeypatch):
 
     assert resp.status_code == 200
     assert data["sql"] == "SELECT * FROM users"
-    assert data["rows"] == []
+    assert data["rows"] == [[1, "alice"]]
     assert data["error"] is None
